@@ -75,3 +75,56 @@ class Polynomial:
         a=self-other
         coefs=tuple(x*-1 for x in a.coefficients)
         return Polynomial(coefs)
+    
+    def __mul__(self, other):
+        if isinstance(other, Polynomial):
+            maxdegree = self.degree() + other.degree()
+            coefs = [0] * (maxdegree + 1)
+            for x in range(maxdegree + 1):
+                sum = 0
+                for y in range(min(self.degree() + 1, x + 1)):
+                    if x - y <= other.degree():
+                        sum += self.coefficients[y] * other.coefficients[x - y]
+                coefs[x] = sum
+            return Polynomial(tuple(coefs))
+        elif isinstance(other, Number):
+            return Polynomial(tuple(other * x for x in self.coefficients))
+        else:
+            return NotImplemented
+
+    def __rmul__(self, other):
+        return self * other
+
+    def __pow__(self, power):
+        if isinstance(power, Number):
+            newpoly = self
+            for x in range(1, power):
+                newpoly = newpoly * self
+            return newpoly
+        else:
+            return NotImplemented
+
+    def __call__(self, num):
+        if isinstance(num, Number):
+            sum = 0
+            for x in range(len(self.coefficients)):
+                sum += self.coefficients[x] * (num**x)
+            return sum
+        else:
+            return NotImplemented
+
+    def dx(self):
+        newpoly = Polynomial(
+            tuple(
+                self.coefficients[x + 1] * (x + 1)
+                for x in range(len(self.coefficients) - 1)
+            )
+        )
+        if newpoly.coefficients == ():
+            newpoly.coefficients = (0,)
+        return newpoly
+
+
+def derivative(poly):
+    return poly.dx()
+
